@@ -74,11 +74,19 @@ inline int predict_action(const std::vector<LogRow>& log,
     return 3;
 }
 
-struct EnemyStat { int atk, def, max_hp; };
-
 enum class TuneMode {
     WIN_RATE,   // 보스: 적 승률 40% 목표
     AVG_DAMAGE, // 일반: 층수에 비례한 HP 소모량 목표
+};
+
+struct EnemyStat {
+    int atk, def, max_hp;
+    // ── 평가용 계측 (auto_tune_enemy가 채택 후보의 시뮬 결과를 기록) ──
+    int      sim_rounds  = 0;                  // achieved 분모(시뮬 횟수)
+    int      sim_wins    = -1;                 // 적 승리 횟수 (WIN_RATE 기준)
+    int      sim_avg_dmg = -1;                 // 플레이어 평균 HP 소모 (AVG_DAMAGE 기준)
+    int      target      = -1;                 // 목표치 (mode에 따라 승수 또는 데미지)
+    TuneMode mode        = TuneMode::WIN_RATE; // 목표 종류
 };
 
 // 시뮬레이션으로 적 스탯을 조정 — 보스는 승률, 일반은 데미지 기준
@@ -99,10 +107,12 @@ inline EnemyStat auto_tune_enemy(int e_atk, int e_def, int e_max_hp,
     std::vector<LogRow> log = csv_load();
     bool has_skills = !player_skills.empty();
 
-    int best_atk    = e_atk;
-    int best_def    = e_def;
-    int best_max_hp = e_max_hp;
-    int best_score  = -1;
+    int best_atk     = e_atk;
+    int best_def     = e_def;
+    int best_max_hp  = e_max_hp;
+    int best_score   = -1;
+    int best_wins    = -1;
+    int best_avg_dmg = -1;
 
     for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
         if (best_score == 0) break;
@@ -203,12 +213,17 @@ inline EnemyStat auto_tune_enemy(int e_atk, int e_def, int e_max_hp,
         }
 
         if (best_score < 0 || score < best_score) {
-            best_score  = score;
-            best_atk    = try_atk;
-            best_def    = try_def;
-            best_max_hp = try_max_hp;
+            best_score   = score;
+            best_atk     = try_atk;
+            best_def     = try_def;
+            best_max_hp  = try_max_hp;
+            best_wins    = wins;
+            best_avg_dmg = total_dmg / SIM_ROUNDS;
         }
     }
 
-    return { best_atk, best_def, best_max_hp };
+    return { best_atk, best_def, best_max_hp,
+             SIM_ROUNDS, best_wins, best_avg_dmg,
+             (mode == TuneMode::WIN_RATE ? TARGET_WINS : TARGET_DMG),
+             mode };
 }

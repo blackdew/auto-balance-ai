@@ -334,7 +334,6 @@ int main(int argc, char** argv) {
             // 데모: 백그라운드 튜너가 방금 내린 결정을 가시화
             if (demo) {
                 double ratio = std::min(0.8, 0.3 + 0.025 * next_level);
-                int    tdmg  = (int)(player.max_hp * ratio);
                 cout << "\n  >> AUTO-BALANCE  floor " << next_level
                      << (next_is_boss ? "  [BOSS]" : "") << "\n";
                 cout << "     enemy : " << next_etype.name
@@ -342,11 +341,17 @@ int main(int argc, char** argv) {
                      << "  w(atk/def/hp)=" << next_etype.atk_w << "/"
                      << next_etype.def_w << "/" << next_etype.hp_w << "\n";
                 cout << "     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)\n";
-                if (next_is_boss)
-                    cout << "     target: enemy win-rate ~40%\n";
-                else
-                    cout << "     target: player HP loss ~" << tdmg << "/" << player.max_hp
+                if (next_is_boss) {
+                    int pct = stat.sim_rounds ? 100 * stat.sim_wins / stat.sim_rounds : 0;
+                    cout << "     target: enemy win-rate 40% (" << stat.target << "/" << stat.sim_rounds << ")\n";
+                    cout << "     sim    : enemy won " << stat.sim_wins << "/" << stat.sim_rounds
+                         << " (" << pct << "%)  |err " << std::abs(stat.sim_wins - stat.target) << "\n";
+                } else {
+                    cout << "     target: player HP loss " << stat.target << "/" << player.max_hp
                          << " (" << (int)(ratio * 100) << "%)\n";
+                    cout << "     sim    : avg HP loss " << stat.sim_avg_dmg << "/" << player.max_hp
+                         << "  |err " << std::abs(stat.sim_avg_dmg - stat.target) << "\n";
+                }
                 cout << "     chosen: atk " << base_atk << "->" << stat.atk
                      << "  def "  << base_def << "->" << stat.def
                      << "  hp "   << base_max_hp << "->" << stat.max_hp << "\n";
