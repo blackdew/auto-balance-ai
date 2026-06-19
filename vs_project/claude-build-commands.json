@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(g++ -std=c++17 -Wall turn_rpg.cpp -o turn_rpg.exe)",
+      "Bash(cmd /c \"\\\\\"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\2022\\\\Community\\\\VC\\\\Auxiliary\\\\Build\\\\vcvars64.bat\\\\\" && cd \\\\\"c:\\\\Users\\\\zsx12\\\\source\\\\repos\\\\ai_gm\\\\ai_gm\\\\\" && cl.exe /Zi /EHsc /nologo /Feturn_rpg.exe turn_rpg.cpp\")",
+      "Bash(MSBuild ai_gm.sln /p:Configuration=Debug /p:Platform=x64 /nologo /v:minimal)"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+# Visual Studio / MSBuild
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Build artifacts
+*.obj
+*.o
+*.exe
+*.out
+*.ilk
+*.pdb
+*.idb
+*.lib
+*.exp
+
+# OS
+.DS_Store
+Thumbs.db
