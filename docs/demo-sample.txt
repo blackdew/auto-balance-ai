@@ -1,0 +1,287 @@
+# Demo transcript — `./src/turn_rpg --demo`
+
+비대화형 자동 플레이. 플레이어 행동은 시뮬레이터와 동일한 KNN 두뇌(predict_action)로 자동 선택되고,
+매 층 승리 직후 백그라운드 튜너가 내린 자동 밸런싱 결정(>> AUTO-BALANCE)이 출력된다.
+튜너가 난수를 쓰므로 실행마다 수치는 달라진다. 아래는 한 번의 실행에서 발췌한 것이다.
+
+## 첫 전투 (floor 1)
+```
+player:1	enemy:1 [Vampire]
+HP:15/15		HP:12/12
+rev(player):0	rev(enemy):0
+------------------------------------------------
+------------------------------------------------
+act(demo): attack
+attack!		4
+
+-------------------------
+player:1	enemy:1 [Vampire]
+HP:15/15		HP:8/12
+rev(player):0	rev(enemy):2
+------------------------------------------------
+------------------------------------------------
+act(demo): defense
+defence!	0
+
+-------------------------
+player:1	enemy:1 [Vampire]
+HP:15/15		HP:8/12
+rev(player):0	rev(enemy):2
+------------------------------------------------
+------------------------------------------------
+act(demo): attack
+attack!		4
+
+-------------------------
+player:1	enemy:1 [Vampire]
+HP:15/15		HP:4/12
+rev(player):0	rev(enemy):4
+------------------------------------------------
+------------------------------------------------
+act(demo): attack
+attack!		5
+attacked!	4
+
+-------------------------
+Win!
+```
+
+## 층별 자동 밸런싱 결정 (난이도 곡선)
+
+> 저층은 목표 HP 소모 30%대에서 시작해 고층으로 갈수록 상승(상한 80%), 보스는 적 승률 40% 목표.
+```
+  >> AUTO-BALANCE  floor 2
+     enemy : Berserker [BERSERKER]  w(atk/def/hp)=0.6/0.1/0.3
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~5/16 (35%)
+     chosen: atk 4->4  def 3->3  hp 12->14
+
+  >> AUTO-BALANCE  floor 3
+     enemy : Knight [ARMOR]  w(atk/def/hp)=0.2/0.3/0.5
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~6/17 (37%)
+     chosen: atk 4->5  def 3->3  hp 14->16
+
+  >> AUTO-BALANCE  floor 4
+     enemy : Knight [ARMOR]  w(atk/def/hp)=0.2/0.3/0.5
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~7/19 (40%)
+     chosen: atk 5->5  def 3->4  hp 16->19
+
+  >> AUTO-BALANCE  floor 5  [BOSS]
+     enemy : Warlord [BERSERKER]  w(atk/def/hp)=0.6/0.15/0.25
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: enemy win-rate ~40%
+     chosen: atk 6->9  def 6->6  hp 18->20
+
+  >> AUTO-BALANCE  floor 2
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~5/16 (35%)
+     chosen: atk 4->5  def 3->4  hp 12->12
+
+  >> AUTO-BALANCE  floor 3
+     enemy : Soldier [NONE]  w(atk/def/hp)=0.33/0.34/0.33
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~6/17 (37%)
+     chosen: atk 5->5  def 4->4  hp 12->15
+
+  >> AUTO-BALANCE  floor 4
+     enemy : Soldier [NONE]  w(atk/def/hp)=0.33/0.34/0.33
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~7/19 (40%)
+     chosen: atk 5->5  def 4->5  hp 15->18
+
+  >> AUTO-BALANCE  floor 5  [BOSS]
+     enemy : Warlord [BERSERKER]  w(atk/def/hp)=0.6/0.15/0.25
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: enemy win-rate ~40%
+     chosen: atk 6->8  def 6->6  hp 18->21
+
+  >> AUTO-BALANCE  floor 6
+     enemy : Turtle [TURTLE]  w(atk/def/hp)=0.1/0.5/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~10/23 (45%)
+     chosen: atk 8->8  def 6->8  hp 21->25
+
+  >> AUTO-BALANCE  floor 7
+     enemy : Berserker [BERSERKER]  w(atk/def/hp)=0.6/0.1/0.3
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~12/26 (47%)
+     chosen: atk 8->11  def 8->8  hp 25->29
+
+  >> AUTO-BALANCE  floor 8
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~14/29 (50%)
+     chosen: atk 11->13  def 8->8  hp 29->35
+
+  >> AUTO-BALANCE  floor 9
+     enemy : Berserker [BERSERKER]  w(atk/def/hp)=0.6/0.1/0.3
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~16/32 (52%)
+     chosen: atk 13->17  def 8->8  hp 35->40
+
+  >> AUTO-BALANCE  floor 10  [BOSS]
+     enemy : IronGolem [ARMOR]  w(atk/def/hp)=0.15/0.5/0.35
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: enemy win-rate ~40%
+     chosen: atk 6->9  def 6->9  hp 18->22
+
+  >> AUTO-BALANCE  floor 11
+     enemy : Soldier [NONE]  w(atk/def/hp)=0.33/0.34/0.33
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~23/40 (57%)
+     chosen: atk 9->10  def 9->14  hp 22->27
+
+  >> AUTO-BALANCE  floor 12
+     enemy : Knight [ARMOR]  w(atk/def/hp)=0.2/0.3/0.5
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~26/44 (60%)
+     chosen: atk 10->14  def 14->19  hp 27->30
+
+  >> AUTO-BALANCE  floor 13
+     enemy : Soldier [NONE]  w(atk/def/hp)=0.33/0.34/0.33
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~30/49 (62%)
+     chosen: atk 14->20  def 19->24  hp 30->32
+
+  >> AUTO-BALANCE  floor 14
+     enemy : Soldier [NONE]  w(atk/def/hp)=0.33/0.34/0.33
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~35/54 (65%)
+     chosen: atk 20->26  def 24->29  hp 32->35
+
+  >> AUTO-BALANCE  floor 15  [BOSS]
+     enemy : BloodWitch [VAMPIRE]  w(atk/def/hp)=0.45/0.15/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: enemy win-rate ~40%
+     chosen: atk 6->14  def 6->9  hp 18->22
+
+  >> AUTO-BALANCE  floor 16
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~45/65 (70%)
+     chosen: atk 14->19  def 9->14  hp 22->28
+
+  >> AUTO-BALANCE  floor 17
+     enemy : Knight [ARMOR]  w(atk/def/hp)=0.2/0.3/0.5
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~51/71 (72%)
+     chosen: atk 19->24  def 14->20  hp 28->34
+
+  >> AUTO-BALANCE  floor 18
+     enemy : Turtle [TURTLE]  w(atk/def/hp)=0.1/0.5/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~57/77 (75%)
+     chosen: atk 24->26  def 20->30  hp 34->40
+
+  >> AUTO-BALANCE  floor 19
+     enemy : Turtle [TURTLE]  w(atk/def/hp)=0.1/0.5/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~65/84 (77%)
+     chosen: atk 26->29  def 30->39  hp 40->47
+
+  >> AUTO-BALANCE  floor 2
+     enemy : Turtle [TURTLE]  w(atk/def/hp)=0.1/0.5/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~5/16 (35%)
+     chosen: atk 4->4  def 3->3  hp 12->14
+
+  >> AUTO-BALANCE  floor 3
+     enemy : Knight [ARMOR]  w(atk/def/hp)=0.2/0.3/0.5
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~6/17 (37%)
+     chosen: atk 4->4  def 3->4  hp 14->16
+
+  >> AUTO-BALANCE  floor 4
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~7/19 (40%)
+     chosen: atk 4->5  def 4->4  hp 16->19
+
+  >> AUTO-BALANCE  floor 5  [BOSS]
+     enemy : Warlord [BERSERKER]  w(atk/def/hp)=0.6/0.15/0.25
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: enemy win-rate ~40%
+     chosen: atk 6->8  def 6->6  hp 18->21
+
+  >> AUTO-BALANCE  floor 6
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~10/23 (45%)
+     chosen: atk 8->9  def 6->6  hp 21->26
+
+  >> AUTO-BALANCE  floor 7
+     enemy : Knight [ARMOR]  w(atk/def/hp)=0.2/0.3/0.5
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~12/26 (47%)
+     chosen: atk 9->10  def 6->8  hp 26->30
+
+  >> AUTO-BALANCE  floor 8
+     enemy : Turtle [TURTLE]  w(atk/def/hp)=0.1/0.5/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~14/29 (50%)
+     chosen: atk 10->11  def 8->13  hp 30->32
+
+  >> AUTO-BALANCE  floor 9
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~16/32 (52%)
+     chosen: atk 11->13  def 13->13  hp 32->39
+
+  >> AUTO-BALANCE  floor 10  [BOSS]
+     enemy : IronGolem [ARMOR]  w(atk/def/hp)=0.15/0.5/0.35
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: enemy win-rate ~40%
+     chosen: atk 6->9  def 6->9  hp 18->22
+
+  >> AUTO-BALANCE  floor 11
+     enemy : Berserker [BERSERKER]  w(atk/def/hp)=0.6/0.1/0.3
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~23/40 (57%)
+     chosen: atk 9->17  def 9->9  hp 22->25
+
+  >> AUTO-BALANCE  floor 12
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~26/44 (60%)
+     chosen: atk 17->21  def 9->13  hp 25->29
+
+  >> AUTO-BALANCE  floor 13
+     enemy : Knight [ARMOR]  w(atk/def/hp)=0.2/0.3/0.5
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~30/49 (62%)
+     chosen: atk 21->22  def 13->18  hp 29->36
+
+  >> AUTO-BALANCE  floor 14
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~35/54 (65%)
+     chosen: atk 22->27  def 18->22  hp 36->41
+
+  >> AUTO-BALANCE  floor 15  [BOSS]
+     enemy : BloodWitch [VAMPIRE]  w(atk/def/hp)=0.45/0.15/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: enemy win-rate ~40%
+     chosen: atk 6->12  def 6->8  hp 18->25
+
+  >> AUTO-BALANCE  floor 16
+     enemy : Berserker [BERSERKER]  w(atk/def/hp)=0.6/0.1/0.3
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~45/65 (70%)
+     chosen: atk 12->18  def 8->12  hp 25->31
+
+  >> AUTO-BALANCE  floor 17
+     enemy : Vampire [VAMPIRE]  w(atk/def/hp)=0.4/0.2/0.4
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: player HP loss ~51/71 (72%)
+     chosen: atk 18->21  def 12->16  hp 31->41
+
+```
+
+## 종료
+```
+
+[demo] finished — reached floor 17 over 40 battle(s).
+```

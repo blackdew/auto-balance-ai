@@ -1,7 +1,11 @@
 # Auto-Balance AI — 자동 난이도 조정 턴제 RPG
 
+[![build](https://github.com/blackdew/auto-balance-ai/actions/workflows/build.yml/badge.svg)](https://github.com/blackdew/auto-balance-ai/actions/workflows/build.yml)
+
 > 학생 캡스톤 제출 프로젝트 — "AI 게임 마스터(GM)"가 플레이어의 실력에 맞춰 **적 스탯을 실시간으로 자동 밸런싱**하는 콘솔 턴제 RPG
 > 분석 정리: 2026-06-19
+
+> **In one line (EN):** A console turn-based RPG where an "AI game master" auto-balances each floor's enemy stats to the player's skill — it learns the player's behavior from a battle log via KNN, runs 50 Monte-Carlo simulated fights per candidate, and picks the enemy stats closest to a target difficulty (40% enemy win-rate for bosses, a floor-scaled HP-drain for regular enemies). C++17, header-only, zero external dependencies.
 
 플레이어가 한 층을 클리어할 때마다, **다음 층 적의 공격력/방어력/체력을 시뮬레이션으로 미리 조정**해 항상 적절한 난이도(보스는 적 승률 40%, 일반 몬스터는 층수 비례 HP 소모)를 유지하는 턴제 RPG. 일반 게임이 적 스탯을 고정 테이블로 쓰는 것과 달리, 이 프로젝트는 **플레이어의 실제 플레이 로그(CSV)를 학습한 KNN AI로 플레이어 행동을 모사**해 50회 가상 전투를 돌리고, 목표 난이도에 가장 근접한 적 스탯을 골라낸다. 즉 "auto balance"의 대상은 **게임 난이도(적 스탯)** 다.
 
@@ -26,15 +30,32 @@
 외부 라이브러리가 없어 표준 C++17 컴파일러만 있으면 됩니다.
 
 ```bash
-# 방법 1) g++ / clang++ 단일 컴파일 (헤더 전부 src/에 함께 위치)
-cd src
-g++ -std=c++17 -O2 -Wall turn_rpg.cpp -o turn_rpg
-./turn_rpg
+# 방법 1) Makefile (권장)
+make          # src/turn_rpg 생성
+make run      # 대화형 플레이
+make demo     # 자동 밸런싱 AI 가시화 데모 (비대화형, 입력 없이 자동 진행)
 
-# 방법 2) Visual Studio 2022 — vs_project/ai_gm.sln 열기
+# 방법 2) 단일 컴파일
+cd src && g++ -std=c++17 -O2 -Wall turn_rpg.cpp -o turn_rpg && ./turn_rpg
+
+# 방법 3) Visual Studio 2022 — vs_project/ai_gm.sln 열기
 #   (단, .vcxproj는 소스를 .. 상위 경로로 참조하던 원본이므로,
-#    src/에 모인 현재 구조에서는 g++ 빌드가 가장 간단)
+#    src/에 모인 현재 구조에서는 make / g++ 빌드가 가장 간단)
 ```
+
+### 데모 모드 — `make demo`
+
+자동 밸런싱은 평소 백그라운드에서 돌아 **플레이 중엔 보이지 않는다.** `--demo`는 플레이어를 (시뮬과 동일한) KNN 두뇌로 자동 플레이시키면서, 매 층 튜너가 내린 결정을 출력해 이 과정을 드러낸다:
+
+```
+  >> AUTO-BALANCE  floor 5  [BOSS]
+     enemy : Warlord [BERSERKER]  w(atk/def/hp)=0.6/0.1/0.3
+     AI    : 20 stat candidates x 50 simulated battles (KNN-predicted player)
+     target: enemy win-rate ~40%
+     chosen: atk 6->9  def 6->6  hp 18->20
+```
+
+전체 실행 발췌는 [docs/demo-sample.txt](docs/demo-sample.txt) 참조. (튜너가 난수를 쓰므로 수치는 실행마다 달라진다.)
 
 > 실행 시 작업 디렉터리에 `battle_log.csv`가 없으면 헤더만 있는 빈 파일을 생성한다(`csv_init`). 동봉된 `src/battle_log.csv`(170행)를 함께 두면 첫 판부터 학습된 AI로 시작한다. **게임을 진행하면 이 CSV에 행동이 계속 append** 되어 AI가 점점 플레이어를 닮아간다.
 
