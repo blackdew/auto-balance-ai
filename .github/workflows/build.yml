@@ -1,0 +1,24 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler version
+        run: g++ --version
+
+      - name: Build (g++, -std=c++17 -Wall)
+        run: make CXX=g++
+
+      - name: Demo smoke test (non-interactive, completion only)
+        # 튜너가 mt19937 난수를 쓰므로 출력값은 단언하지 않는다.
+        # 데모가 입력 없이 끝까지 완주(exit 0)하는지만 검증한다.
+        run: timeout 120 ./src/turn_rpg --demo < /dev/null > /dev/null
